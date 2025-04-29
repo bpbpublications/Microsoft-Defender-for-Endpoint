@@ -1,0 +1,160 @@
+Here are random 20 KQL queries references that you can use for advanced hunting in Microsoft Defender:
+==================================
+•	List all devices with recent threat detection:
+   
+   DeviceEvents
+   | where Timestamp > ago(7d)
+   | where ActionType == "Alert"
+   | summarize ThreatCount=count() by DeviceId
+   | project DeviceId, ThreatCount
+
+
+•	Identify unusual process execution:
+   
+   DeviceProcessEvents
+   | where Timestamp > ago(1d)
+   | summarize Count=count() by ProcessCommandLine
+   | order by Count desc
+
+
+•	List devices with disabled real-time protection:
+   
+   DeviceInfo
+   | where RealTimeProtectionEnabled == "False"
+   | project DeviceName, OSVersion, LastSeen, ProjectInfo = "YourProjectInfoHere"   
+
+•	Identify devices with multiple malware detections:
+   
+   DeviceEvents
+   | where Timestamp > ago(7d)
+   | where ActionType == "Alert" and Category == "Malware"
+   | summarize ThreatCount=count() by DeviceId
+   | where ThreatCount > 1
+   
+
+•	Find devices with disabled firewall:
+   
+   DeviceInfo
+   | where FirewallEnabled == "False"
+   
+
+•	List devices with successful credential theft attempts:
+   
+   DeviceLogonEvents
+   | where Timestamp > ago(1d)
+   | where ActionType == "LogonSuccess" and LogonType == "3"
+   | summarize Count=count() by DeviceId, InitiatingProcessFileName, AccountName
+   
+
+•	Identify unusual network connections:
+   
+   DeviceNetworkEvents
+   | where Timestamp > ago(1d)
+   | summarize Count=count() by RemoteIP, LocalPort, RemotePort, Protocol
+   | order by Count desc
+   
+
+•	List all devices with recent exploit detection:
+   
+   DeviceEvents
+   | where Timestamp > ago(7d)
+   | where ActionType == "Alert" and Category == "Exploit"
+   | summarize ThreatCount=count() by DeviceId
+   | project DeviceId, ThreatCount
+   
+
+•	Identify devices with disabled auto-update:
+   
+   DeviceInfo
+   | where AutoUpdateSettingsEnabled == "False"
+   
+
+•	List devices with frequent failed logon attempts:
+    
+    DeviceLogonEvents
+    | where Timestamp > ago(1d)
+    | where ActionType == "LogonFailure"
+    | summarize Count=count() by DeviceId, InitiatingProcessFileName, AccountName
+    | order by Count desc
+    
+
+•	Identify devices with unusual registry changes:
+    
+    DeviceRegistryEvents
+    | where Timestamp > ago(1d)
+    | summarize Count=count() by RegistryKey
+    | order by Count desc
+    
+
+•	List devices with suspicious Powershell activity:
+    
+DeviceProcessEvents
+| where Timestamp > ago(1d)
+| where ProcessCommandLine has "powershell.exe"
+| extend CommandLineLower = tolower(ProcessCommandLine)
+| where CommandLineLower has_any ("-enc", "-nop", "-w hidden", "iex", "invoke-expression", "downloadstring", "bypass")
+| summarize Count=count() by DeviceId, ProcessCommandLine, AccountName, InitiatingProcessFileName
+| order by Count desc
+
+•	Identify devices with multiple suspicious script block executions:
+
+    DeviceProcessEvents
+    | where Timestamp > ago(1d)
+    | where ProcessCommandLine has “ScriptBlock” and ProcessCommandLine has “powershell.exe”
+    | summarize ThreatCount=count() by DeviceId, InitiatingProcessCommandLine
+    | where ThreatCount > 1
+
+
+•	Find devices with disabled AMSI protection:
+    
+    DeviceInfo
+    | where AmsiProtectionEnabled == "False"
+    
+
+
+•	List devices with frequent service creation events:
+    
+    DeviceProcessEvents
+    | where Timestamp > ago(1d)
+    | where ActionType == "ServiceCreation"
+    | summarize Count=count() by DeviceId, InitiatingProcessCommandLine
+    | order by Count desc
+    
+
+•	Identify devices with disabled credential guard:
+    
+    DeviceInfo
+    | where CredentialGuardEnabled == "False"
+    
+
+•	List devices with successful lateral movement attempts:
+    
+    DeviceNetworkEvents
+    | where Timestamp > ago(1d)
+    | where ActionType == "NetworkConnection"
+    | summarize Count=count() by DeviceId, RemoteIP, RemotePort, InitiatingProcessCommandLine
+    | order by Count desc
+    
+
+•	Identify devices with frequent failed script block execution:
+    
+    DeviceProcessEvents
+    | where Timestamp > ago(1d)
+    | where ActionType == "ScriptBlock"
+    | summarize Count=count() by DeviceId, InitiatingProcessCommandLine
+    | where Count > 10
+    
+
+•	List devices with disabled bitlocker encryption:
+    
+    DeviceInfo
+    | where BitLockerEnabled == "False"
+    
+
+•	Identify devices with frequent execution of unsigned code:
+    
+    DeviceProcessEvents
+    | where Timestamp > ago(1d)
+    | where ActionType == "ImageLoad" and IsSignerTrusted == "False"
+    | summarize Count=count() by DeviceId, InitiatingProcessCommandLine, ImageFileName
+    | order by Count desc
